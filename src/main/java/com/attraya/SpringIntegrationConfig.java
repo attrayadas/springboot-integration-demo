@@ -8,6 +8,8 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.file.FileReadingMessageSource;
 import org.springframework.integration.file.FileWritingMessageHandler;
+import org.springframework.integration.file.filters.CompositeFileListFilter;
+import org.springframework.integration.file.filters.SimplePatternFileListFilter;
 
 import java.io.File;
 
@@ -16,10 +18,13 @@ import java.io.File;
 public class SpringIntegrationConfig {
 
     @Bean
-    @InboundChannelAdapter(value = "fileInputChannel", poller = @Poller(fixedDelay = "1000") ) // read automatically in 1secs
+    @InboundChannelAdapter(value = "fileInputChannel", poller = @Poller(fixedDelay = "10000") ) // read automatically in 10secs
     public FileReadingMessageSource fileReadingMessageSource(){
+        CompositeFileListFilter<File> filter = new CompositeFileListFilter<>();
+        filter.addFilter(new SimplePatternFileListFilter("*.jpg"));
         FileReadingMessageSource reader = new FileReadingMessageSource();
         reader.setDirectory(new File("C:\\Users\\Attraya\\Desktop\\Sources"));
+        reader.setFilter(filter);
         return reader;
     }
 
