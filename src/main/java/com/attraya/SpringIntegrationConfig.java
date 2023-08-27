@@ -1,5 +1,6 @@
 package com.attraya;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.InboundChannelAdapter;
@@ -17,13 +18,19 @@ import java.io.File;
 @EnableIntegration
 public class SpringIntegrationConfig {
 
+    @Value("${source.directory}")
+    private String sourceDirectory;
+
+    @Value("${target.directory}")
+    private String targetDirectory;
+
     @Bean
-    @InboundChannelAdapter(value = "fileInputChannel", poller = @Poller(fixedDelay = "10000") ) // read automatically in 10secs
+    @InboundChannelAdapter(value = "fileInputChannel", poller = @Poller(fixedDelay = "1000") ) // read automatically in 10secs
     public FileReadingMessageSource fileReadingMessageSource(){
         CompositeFileListFilter<File> filter = new CompositeFileListFilter<>();
-        filter.addFilter(new SimplePatternFileListFilter("*.jpg"));
+        filter.addFilter(new SimplePatternFileListFilter("*.gif"));
         FileReadingMessageSource reader = new FileReadingMessageSource();
-        reader.setDirectory(new File("C:\\Users\\Attraya\\Desktop\\Sources"));
+        reader.setDirectory(new File(sourceDirectory));
         reader.setFilter(filter);
         return reader;
     }
@@ -31,7 +38,7 @@ public class SpringIntegrationConfig {
     @Bean
     @ServiceActivator(inputChannel = "fileInputChannel")
     public FileWritingMessageHandler fileWritingMessageHandler(){
-        FileWritingMessageHandler writer = new FileWritingMessageHandler(new File("C:\\Users\\Attraya\\Desktop\\Destination"));
+        FileWritingMessageHandler writer = new FileWritingMessageHandler(new File(targetDirectory));
         writer.setAutoCreateDirectory(true); // to create "Destination" folder automatically
         writer.setExpectReply(false);
         return writer;
